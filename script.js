@@ -1,53 +1,55 @@
-document.addEventListener("DOMContentLoaded", function() {
-    const animalListContainer = document.getElementById("animalList");
-    const animalDetailsContainer = document.getElementById("animalDetails");
-  
-    // Function to fetch and display the list of animals
-    function displayAnimalList() {
-      fetch("http://localhost:3000/characters")
-        .then(response => response.json())
-        .then(data => {
-          animalListContainer.innerHTML = "";
-          data.forEach(animal => {
-            const animalCard = document.createElement("div");
-            animalCard.classList.add("animal-card");
-            animalCard.textContent = animal.name;
-  
-            // Event listener to show animal details on click
-            animalCard.addEventListener("click", function() {
-              displayAnimalDetails(animal.id);
-            });
-  
-            animalListContainer.appendChild(animalCard);
-          });
-        })
-        .catch(error => console.error("Error fetching animal list:", error));
+document.addEventListener("DOMContentLoaded", function () {
+  const characterList = document.getElementById("character-list");
+  const characterDetails = document.getElementById("character-details");
+  let characters = [];
+
+  // Fetch characters from the API
+  fetch("http://localhost:3000/characters")
+    .then(response => response.json())
+    .then(data => {
+      characters = data;
+      displayCharacterList(characters);
+    });
+
+  // Attach click event to each character for displaying details
+  characterList.addEventListener("click", function (event) {
+    if (event.target.tagName === "LI") {
+      const characterId = parseInt(event.target.dataset.id);
+      // Find the selected character by ID
+      const selectedCharacter = characters.find(character => character.id === characterId);
+      // Display the details of the selected character
+      displayCharacterDetails(selectedCharacter);
     }
-  
-    // Function to fetch and display animal details
-    function displayAnimalDetails(animalId) {
-      fetch(`http://localhost:3000/characters/${animalId}`)
-        .then(response => response.json())
-        .then(animal => {
-          animalDetailsContainer.innerHTML = `
-            <div class="animal-details">
-              <h2>${animal.name}</h2>
-              <img src="${animal.image}" alt="${animal.name}">
-              <p>Votes: ${animal.votes}</p>
-              <button onclick="voteForAnimal(${animal.id})">Vote</button>
-            </div>
-          `;
-        })
-        .catch(error => console.error("Error fetching animal details:", error));
-    }
-  
-    // Function to simulate voting for an animal
-    window.voteForAnimal = function(animalId) {
-      // Simulate voting logic (you can enhance this based on your requirements)
-      console.log(`Voted for animal with ID ${animalId}`);
-    };
-  
-    // Initial display of the animal list
-    displayAnimalList();
   });
-  
+
+  // Function to display the list of characters
+  function displayCharacterList(characters) {
+    characterList.innerHTML = "";
+    characters.forEach(character => {
+      const listItem = document.createElement("li");
+      listItem.textContent = character.name;
+      listItem.dataset.id = character.id;
+      characterList.appendChild(listItem);
+    });
+  }
+
+  // Function to display the details of a character
+  function displayCharacterDetails(character) {
+    characterDetails.innerHTML = `
+      <h2>${character.name}</h2>
+      <img src="${character.image}" alt="${character.name}">
+      <p>Votes: ${character.votes}</p>
+      <button onclick="voteForCharacter(${character.id})">Vote</button>
+    `;
+  }
+
+  // Function to handle voting for a character
+  window.voteForCharacter = function (characterId) {
+    // Update the votes locally (no persistence needed)
+    const selectedCharacter = characters.find(character => character.id === characterId);
+    selectedCharacter.votes += 1;
+
+    // Display updated details
+    displayCharacterDetails(selectedCharacter);
+  };
+});
